@@ -214,6 +214,7 @@ public class Board {
         }
         return false;
     }
+
     private boolean isEmpty(int row, int col) {
         // Check boundaries first to avoid IndexOutOfBoundsException
         if (row < 0 || row >= rows || col < 0 || col >= cols) {
@@ -221,34 +222,33 @@ public class Board {
         }
         return tiles[row][col] == null; // True if the spot is empty
     }
-    private boolean isBaseOnOtherTile(Word w)
-    {
+
+    private boolean isBaseOnOtherTile(Word w) {
 
         int wordEndRow = w.getRow() + (w.isVertical() ? w.getTiles().length : 1) - 1;
         int wordEndCol = w.getCol() + (w.isVertical() ? 1 : w.getTiles().length) - 1;
 
         //checks is it is the first word meaning covering the (7,7) in first try
-        if(!this.isFirstWordPlaced)
-        {
+        if (!this.isFirstWordPlaced) {
 //            this.isFirstWordPlaced = true;
             return IsFirstWordTouchCenter(w);
         }
         //checks if based on another tile meaning hofef or zamood
-       else
-       {
+        else {
             // I want to check aroud each letter is there somthing around it on board?
-           for(int i=0; i<w.getTiles().length; i++)
-           {
-               //i look where do i stand?
-               int curr_row =  w.getRow() + (w.isVertical() ? i : 0);
-               int curr_col = w.getCol() + (w.isVertical() ? 0 : i);
-               // i check if it is empty in all 4 directions: (if null returns true meaning if all null around i'll not return yet
-               if(!isEmpty(curr_row,curr_col) || !isEmpty(curr_row+1,curr_col) || !isEmpty(curr_row-1,curr_col)
-               || !isEmpty(curr_row,curr_col+1) || !isEmpty(curr_row,curr_col-1))
-                   return true;
-           }
-       }
+            for (int i = 0; i < w.getTiles().length; i++) {
+                //i look where do i stand?
+                int curr_row = w.getRow() + (w.isVertical() ? i : 0);
+                int curr_col = w.getCol() + (w.isVertical() ? 0 : i);
+                // i check if it is empty in all 4 directions: (if null returns true meaning if all null around i'll not return yet
+                if (!isEmpty(curr_row, curr_col) || !isEmpty(curr_row + 1, curr_col) || !isEmpty(curr_row - 1, curr_col)
+                        || !isEmpty(curr_row, curr_col + 1) || !isEmpty(curr_row, curr_col - 1))
+                    return true;
+            }
+        }
+        return false;
     }
+
   public boolean boardLegal(Word word)
   {
       //check if the word is in the board borders
