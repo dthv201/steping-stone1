@@ -252,9 +252,8 @@ public class Board {
   public boolean boardLegal(Word word)
   {
       //check if the word is in the board borders
-      isInBorders(word);
-      isBaseOnOtherTile(word);
-      isBaseOnOtherTile(word);
+    return ( isInBorders(word) && isBaseOnOtherTile(word) && isBaseOnOtherTile(word));
+
   }
 
     public Tile[][] getTiles()
