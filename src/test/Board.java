@@ -1,14 +1,12 @@
 package test;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
+import java.util.*;
 
 
 public class Board {
     private Tile[][] tiles;
     private final int rows;
     private final int cols;
+    private boolean isFirstWordPlaced;
     private Map<Position, BonusType> bonusTiles;
     private static Board instance = null;
 
@@ -58,6 +56,7 @@ public class Board {
         this.cols = cols;
         this.tiles = new Tile[this.rows][this.cols];
         this.bonusTiles = new HashMap<>();
+        isFirstWordPlaced = false;
         initializeBonusTiles();
     }
 
@@ -91,6 +90,7 @@ public class Board {
         bonusTiles.put(new Position(14, 3), BonusType.DOUBLE_LETTER);
         bonusTiles.put(new Position(14, 11), BonusType.DOUBLE_LETTER);
     }
+
     public void initializeTriple_word() {
         // Directly set TW tiles for the corners
         bonusTiles.put(new Position(0, 0), BonusType.TRIPLE_WORD);
@@ -104,6 +104,7 @@ public class Board {
         bonusTiles.put(new Position(7, 14), BonusType.TRIPLE_WORD);
         bonusTiles.put(new Position(14, 7), BonusType.TRIPLE_WORD);
     }
+
     public void initializeDoble_word() {
 
         // Double Word Score
@@ -118,6 +119,7 @@ public class Board {
         // Center tile, often starts play or has a star, could be considered a DW
         bonusTiles.put(new Position(7, 7), BonusType.DOUBLE_WORD);
     }
+
     // Initialize Triple Letter (TL) score tiles in a pattern
     public void initializeTripleLetterPositions() {
         // Select positions for TL tiles that encourage strategic play across the board
@@ -154,12 +156,107 @@ public class Board {
         initializeTripleLetterPositions();
     }
 
+
     public static Board getBoard() {
         if (instance == null) {
             instance = new Board(); // Initialize the instance if it doesn't exist
         }
         return instance; // Return the existing or new instance
     }
+
+    boolean dictionaryLegal() {
+        return true;
+    }
+
+    private boolean isInBorders(Word w) {
+        //if the first tile isn't in the borders
+        if ((w.getRow() < 0) || (w.getRow() > 14) || (w.getCol() < 0) || (w.getCol() > 14)) {
+            return false;
+        }
+        //checks is the last tile in border
+        if (w.isVertical()) {
+            //meaning i need to check the vartical componenet
+            if (w.getRow() + w.getTiles().length - 1 <= 14) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            if (w.getCol() + w.getTiles().length - 1 <= 14) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    private boolean IsFirstWordTouchCenter(Word w) {
+        //I know for sure thet there is no other word on bord i must go in the center
+        if (w.isVertical()) {
+            //meaning i need to check the vartical componenet
+            if (w.getRow() <= 7) {
+                if (w.getRow() == 7) {
+                    return true;
+                } else if (w.getRow() + w.getTiles().length - 1 < 7) {
+                    return true;
+                }
+                return false;
+            }
+        }
+        //meaning horizontal
+        else {
+            if (w.getCol() == 7) {
+                return true;
+            } else if (w.getCol() + w.getTiles().length - 1 < 7) {
+                return true;
+            }
+
+        }
+        return false;
+    }
+    private boolean isEmpty(int row, int col) {
+        // Check boundaries first to avoid IndexOutOfBoundsException
+        if (row < 0 || row >= rows || col < 0 || col >= cols) {
+            return true; // Out of bounds treated as "empty"
+        }
+        return tiles[row][col] == null; // True if the spot is empty
+    }
+    private boolean isBaseOnOtherTile(Word w)
+    {
+
+        int wordEndRow = w.getRow() + (w.isVertical() ? w.getTiles().length : 1) - 1;
+        int wordEndCol = w.getCol() + (w.isVertical() ? 1 : w.getTiles().length) - 1;
+
+        //checks is it is the first word meaning covering the (7,7) in first try
+        if(!this.isFirstWordPlaced)
+        {
+//            this.isFirstWordPlaced = true;
+            return IsFirstWordTouchCenter(w);
+        }
+        //checks if based on another tile meaning hofef or zamood
+       else
+       {
+            // I want to check aroud each letter is there somthing around it on board?
+           for(int i=0; i<w.getTiles().length; i++)
+           {
+               //i look where do i stand?
+               int curr_row =  w.getRow() + (w.isVertical() ? i : 0);
+               int curr_col = w.getCol() + (w.isVertical() ? 0 : i);
+               // i check if it is empty in all 4 directions: (if null returns true meaning if all null around i'll not return yet
+               if(!isEmpty(curr_row,curr_col) || !isEmpty(curr_row+1,curr_col) || !isEmpty(curr_row-1,curr_col)
+               || !isEmpty(curr_row,curr_col+1) || !isEmpty(curr_row,curr_col-1))
+                   return true;
+           }
+       }
+    }
+  public boolean boardLegal(Word word)
+  {
+      //check if the word is in the board borders
+      isInBorders(word);
+      isBaseOnOtherTile(word);
+      isBaseOnOtherTile(word);
+  }
+
     public Tile[][] getTiles()
     {
         Tile[][] copyT = new Tile[rows][cols];
