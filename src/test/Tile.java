@@ -15,6 +15,9 @@ public class Tile {
         this.letter = letter;
         this.score = score;
     }
+    public char getLetter() {
+        return letter;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -50,13 +53,14 @@ public class Tile {
         private int getScoreForLetter(char letter) {
             // Example scoring logic (simplified)
             switch(letter) {
-                case 'A': case 'E': case 'I': case 'O': case 'U': case 'L': case 'N': case 'S': case 'T': case 'R':
+                case 'A': case 'E': case 'I': case 'O': case 'U': case 'L':
+                    case 'N': case 'S': case 'T': case 'R':
                     return 1;
                 case 'D': case 'G':
                     return 2;
                 case 'B': case 'C': case 'M': case 'P':
                     return 3;
-                case 'F': case 'Y': case 'W': case 'V':
+                case 'F': case 'Y': case 'W': case 'V': case 'H':
                     return 4;
                 case 'K':
                     return 5;

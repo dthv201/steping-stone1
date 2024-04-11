@@ -22,6 +22,14 @@ public class Word {
     public int getCol() {
         return col;
     }
+    @Override
+    public String toString() {
+        StringBuilder wordStr = new StringBuilder();
+        for (Tile tile : tiles) {
+            wordStr.append(tile.getLetter()); // Assuming each Tile can return its letter
+        }
+        return wordStr.toString();
+    }
 
     public int getRow() {
         return row;
