@@ -252,6 +252,7 @@ public class Board {
                 int curr_col = w.getCol() + (w.isVertical() ? 0 : i);
                 // i check if it is empty in all 4 directions: (if null returns true meaning if all null around i'll not return yet
                 //The problem is fuking right here!!
+//                System.out.println(tiles[curr_row][curr_col]);
                 if (!isEmpty(curr_row, curr_col) || !isEmpty(curr_row + 1, curr_col) || !isEmpty(curr_row - 1, curr_col) || !isEmpty(curr_row, curr_col + 1) || !isEmpty(curr_row, curr_col - 1))
                 {
                     counter +=1;
@@ -265,37 +266,32 @@ public class Board {
         //all nulls around me
         return false;
     }
+    // In Board class
+    public String getCompleteWordString(Word word) {
+        StringBuilder fullWord = new StringBuilder();
+        int rowStart = word.getRow();
+        int colStart = word.getCol();
 
-    //returns list arry of all the new words we created on board
-    public ArrayList<Word> getWords(Word placedWord)
-    {
-        //First i want to add the word itself
-        ArrayList<Word> newWords = new ArrayList<Word>();
-        newWords.add(placedWord);
-        String strPlacedWord = placedWord.toString();
-        uniqueWords.add(strPlacedWord);
+        // Iterate through the word's length
+        for (int i = 0; i < word.getTiles().length; i++) {
+            int row = rowStart + (word.isVertical() ? i : 0);
+            int col = colStart + (word.isVertical() ? 0 : i);
 
-        int row = placedWord.getRow();
-        int col = placedWord.getCol();
-
-        //for each tile in the word i want to check if i created new word
-        for(Tile tile: placedWord.getTiles())
-        {
-            //search for new word horizotly
-            Word horizontalWord = findNewWord(row,col,false);
-            if((horizontalWord != null) && (!uniqueWords.contains(horizontalWord.toString())))
+            // Check if the tile at the current position is a placeholder or null
+            if (word.getTiles()[i] == null || "_".equals(word.getTiles()[i].letter))
             {
-                    newWords.add(horizontalWord);
+                // If it's a placeholder, use the letter from the board
+                if (tiles[row][col] != null) {
+                    fullWord.append(tiles[row][col].letter);
+                }
             }
-            //search varticly
-            Word varticalWord = findNewWord(row,col,true);
-            if( (varticalWord != null) && ( !uniqueWords.contains(varticalWord.toString()) ) )
-            {
-                newWords.add(varticalWord);
+            else {
+                // Otherwise, use the letter from the word itself
+                fullWord.append(word.getTiles()[i].letter);
             }
         }
-        return newWords;
 
+        return fullWord.toString();
     }
     private boolean isValidPosition(int row, int col) {
         if ((row < 0) || (row > 14) || (col < 0) || (col > 14)) {
@@ -304,15 +300,57 @@ public class Board {
         return true;
 
     }
+
+    //returns list arry of all the new words we created on board
+    public ArrayList<Word> getWords(Word placedWord)
+    {
+        //First i want to add the word itself
+        ArrayList<Word> newWords = new ArrayList<Word>();
+        newWords.add(placedWord);
+        String strPlacedWord = getCompleteWordString(placedWord);
+        uniqueWords.add(strPlacedWord);
+
+        int row = placedWord.getRow();
+        int col = placedWord.getCol();
+
+        //for each tile in the word i want to check if i created new word
+        for(int i = 0; i<placedWord.getTiles().length; i++)
+        {
+            //search for new word horizotly
+            if(placedWord.isVertical()) {
+                Word horizontalWord = findNewWord(row+i, col, false);
+                if ((horizontalWord != null) && (!uniqueWords.contains(horizontalWord.toString())) && dictionaryLegal(horizontalWord) ) {
+                    newWords.add(horizontalWord);
+                    System.out.println(getCompleteWordString(horizontalWord));
+                    uniqueWords.add(getCompleteWordString(horizontalWord));
+                }
+            }
+            //search varticly
+            else {
+                Word varticalWord = findNewWord(row, col+i, true);
+                if ((varticalWord != null) && (!uniqueWords.contains(varticalWord.toString())) && (dictionaryLegal(varticalWord))) {
+                    newWords.add(varticalWord);
+                    System.out.println(getCompleteWordString(varticalWord));
+                    uniqueWords.add(getCompleteWordString(varticalWord));
+                }
+            }
+        }
+        return newWords;
+
+    }
     private Word findNewWord(int row, int col, boolean isVertical) {
         // Directions are inverted because we're looking perpendicularly to the word's orientation
         int[] directions = isVertical ? new int[]{1, 0} : new int[]{0, 1};
         List<Tile> tilesForWord = new ArrayList<>();
+        int startRow = row;
+        int startCol = col;
 
-        // Add the starting tile to the list
-        tilesForWord.add(tiles[row][col]);
+        // First check the tile at the current position if it's not part of the main word being placed
+        if (tiles[row][col] != null && !"_".equals(tiles[row][col].letter)) {
+            tilesForWord.add(tiles[row][col]);
+        }
 
-        // Move "backwards" from the starting tile and collect tiles
+        // Move "backwards" from the starting tile and collect tiles, excluding the start if it's the main word tile
         int r = row - directions[0];
         int c = col - directions[1];
         while (isValidPosition(r, c) && !isEmpty(r, c)) {
@@ -320,31 +358,71 @@ public class Board {
             r -= directions[0];
             c -= directions[1];
         }
+        // Update start position to the beginning of the new word
+        if (!tilesForWord.isEmpty()) {
+            startRow = r + directions[0];
+            startCol = c + directions[1];
+        }
 
-        // Reset to the starting position
+        // Reset to the starting position and move "forwards", excluding the initial position if it's part of the main word
         r = row + directions[0];
         c = col + directions[1];
-
-        // Move "forwards" from the starting tile and collect tiles
         while (isValidPosition(r, c) && !isEmpty(r, c)) {
             tilesForWord.add(tiles[r][c]); // Add at the end of the list
             r += directions[0];
             c += directions[1];
         }
 
-        // Check if the collected tiles form a valid word (more than just a single tile)
+        // Create a word if there's more than one tile collected
         if (tilesForWord.size() > 1) {
-            // Assume Word has a constructor that takes a list of Tile objects
-            // and possibly orientation if your Word class needs it
-            Word newWord =  new Word(tilesForWord.toArray(new Tile[0]), row, col, !isVertical);
-            if(dictionaryLegal(newWord))
-            {
-                return newWord;
-            }
+            return new Word(tilesForWord.toArray(new Tile[0]), startRow, startCol, isVertical);
         }
 
         return null; // Return null if no valid word is formed
     }
+
+
+    //    private Word findNewWord(int row, int col, boolean isVertical) {
+//        // Directions are inverted because we're looking perpendicularly to the word's orientation
+//        int[] directions = isVertical ? new int[]{1, 0} : new int[]{0, 1};
+//        List<Tile> tilesForWord = new ArrayList<>();
+//        int startRow = row;
+//        int startCol = col;
+//
+//
+//        while (isValidPosition(row - directions[0], col - directions[1]) && !isEmpty(row - directions[0], col - directions[1])) {
+//            row -= directions[0];
+//            col -= directions[1];
+//            tilesForWord.addFirst(tiles[row][col]); // Add at the beginning of the list
+//        }
+//
+//
+//        startRow = row;
+//        startCol = col;
+//
+//        tilesForWord.add(tiles[startRow][startCol]);
+//
+//
+//        //setting for moving from middle to end
+//        row = startRow + directions[0];
+//        col = startCol + directions[1];
+//
+//        // Move "forwards" from the starting tile and collect tiles
+//        while (isValidPosition(row, col) && !isEmpty(row, col)) {
+//            tilesForWord.add(tiles[row][col]);
+//            row += directions[0];
+//            col += directions[1];
+//        }
+//
+//        // Check if the collected tiles form a valid word (more than just a single tile)
+//        if (tilesForWord.size() > 1 ) {
+//            // Create a new Word from the collected tiles, using the correct starting position and orientation
+//            return new Word(tilesForWord.toArray(new Tile[0]), startRow, startCol, !isVertical);
+//        }
+//
+//
+//        return null; // Return null if no valid word is formed
+//    }
   public boolean boardLegal(Word word)
   {
       //check if the word is in the board borders
@@ -360,34 +438,45 @@ public class Board {
         int[] directions = word.isVertical() ? new int[]{1, 0} : new int[]{0, 1};
         int r = word.getRow() ;
         int c = word.getCol() ;
+        BonusType bonus = null;
+        Position tilePos;
 
         //now we gp tile by tile
         for(Tile tile: word.getTiles())
         {
+            int letterScore = 0;
 
-            int letterScore = tile.score;
+            if (tile != null)
+            {
+                letterScore = tile.score;
+                tilePos = new Position(r,c);
+                bonus = bonusTiles.get(tilePos);
+                if (bonus != null) {
+                    switch (bonus) {
+                        case DOUBLE_LETTER:
+                            letterScore *= 2;
+                            break;
+                        case TRIPLE_LETTER:
+                            letterScore *= 3;
+                            break;
+                        case DOUBLE_WORD:
+                            wordMulti *= 2;
+                            break;
+                        case TRIPLE_WORD:
+                            wordMulti *= 3;
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                letterScore = tiles[r][c].score;
+            }
             //now i want to see if it is on spesial place:
-            Position tilePos = new Position(r,c);
-            BonusType bonus = bonusTiles.get(tilePos);
+
             r +=  directions[0];
             c +=  directions[1];
 
-            if (bonus != null) {
-                switch (bonus) {
-                    case DOUBLE_LETTER:
-                        letterScore *= 2;
-                        break;
-                    case TRIPLE_LETTER:
-                        letterScore *= 3;
-                        break;
-                    case DOUBLE_WORD:
-                        wordMulti *= 2;
-                        break;
-                    case TRIPLE_WORD:
-                        wordMulti *= 3;
-                        break;
-                }
-            }
             score += letterScore;
         }
         score *= wordMulti;
@@ -395,12 +484,56 @@ public class Board {
 
 
     }
+    public void printBoardStatus() {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (tiles[i][j] == null) {
+                    System.out.print(". "); // Print a dot for empty positions
+                } else {
+                    System.out.print(tiles[i][j].letter + " "); // Print the letter of the tile
+                }
+            }
+            System.out.println(); // New line after each row
+        }
+        System.out.println(); // Extra line for readability after the board is printed
+    }
+    private void addWordToBoard(Word word) {
+        int row = word.getRow();
+        int col = word.getCol();
+        //the tiles of the word itself not on board yet
+        for (Tile tile : word.getTiles()) {
+            // Determine the actual tile to place at this position (handle placeholders)
+            Tile actualTile = tile;
+            //if in the word i got there is a null or place holder in the "tile" i check now
+            if (tile == null || "_".equals(String.valueOf(tile.letter))) { // Assuming your Tile class has a 'letter' field
+                // For a placeholder, use the existing tile on the board
+                actualTile = tiles[row][col];
+            }
+
+            // Update the board only if there's a tile to place
+            if (actualTile != null) {
+                tiles[row][col] = actualTile;
+            }
+
+            // Move to the next tile position based on word orientation
+            if (word.isVertical()) {
+                row++;
+            } else {
+                col++;
+            }
+        }
+    }
+
     public int tryPlaceWord(Word word)
     {
         if (!boardLegal(word) || !dictionaryLegal(word))
         {
             return 0;
         }
+
+        addWordToBoard(word);
+        printBoardStatus();
+
         int score = 0;
         ArrayList<Word> newWords = new ArrayList<Word>();
         newWords = getWords(word);
