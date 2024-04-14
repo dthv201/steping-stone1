@@ -7,9 +7,12 @@ public class Board {
     static int counter = 0;
     private static Board instance = null;
     private final Tile[][] tiles;
+    private int currentMove = 0;
+
     private final int rows;
     private final int cols;
     private final Map<Position, BonusType> bonusTiles;
+//    private  Map<Position, Integer> tilePlacementTurns;
     private final HashSet<String> uniqueWords; // Keep track of unique words placed on the board
     private boolean isFirstWordPlaced;
 
@@ -21,6 +24,7 @@ public class Board {
         this.bonusTiles = new HashMap<>();
         isFirstWordPlaced = false;
         initializeBonusTiles();
+//        this.tilePlacementTurns = new HashMap<>();
         this.uniqueWords = new HashSet<>();
     }
 
@@ -125,17 +129,17 @@ public class Board {
             //meaning i need to check the vartical componenet
             if (row + w.getTiles().length - 1 <= 14) {
                 int finalRow = row + w.getTiles().length - 1;
-//                System.out.println(" The row is"+finalRow+"The col is: "+col);
+
                 return true;
             } else {
                 int finalRow = row + w.getTiles().length - 1;
-//                System.out.println(" The row is "+finalRow+"The col is: "+col+" return false");
+
                 return false;
             }
         } else {
             if (col + w.getTiles().length - 1 <= 14) {
                 int finalCol = col + w.getTiles().length - 1;
-//                System.out.println(" The row is"+finalCol+"The col is: "+col+ " return false");
+
                 return true;
             } else {
                 return false;
@@ -173,7 +177,7 @@ public class Board {
     }
 
     private boolean isBaseOnOtherTile(Word w) {
-        //  starting postion  if vartical i want to end in the last els i stay in same row
+        //  starting postion  if vartical i want to end in the last else i stay in same row
         int wordEndRow = w.getRow() + (w.isVertical() ? w.getTiles().length : 1) - 1;
         int wordEndCol = w.getCol() + (w.isVertical() ? 1 : w.getTiles().length) - 1;
 
@@ -250,7 +254,7 @@ public class Board {
                 Word horizontalWord = findNewWord(row + i, col, false);
                 if ((horizontalWord != null) && (!uniqueWords.contains(horizontalWord.toString())) && dictionaryLegal(horizontalWord)) {
                     newWords.add(horizontalWord);
-                    System.out.println(getCompleteWordString(horizontalWord));
+//                    System.out.println(getCompleteWordString(horizontalWord));
                     uniqueWords.add(getCompleteWordString(horizontalWord));
                 }
             }
@@ -259,7 +263,7 @@ public class Board {
                 Word varticalWord = findNewWord(row, col + i, true);
                 if ((varticalWord != null) && (!uniqueWords.contains(varticalWord.toString())) && (dictionaryLegal(varticalWord))) {
                     newWords.add(varticalWord);
-                    System.out.println(getCompleteWordString(varticalWord));
+//                    System.out.println(getCompleteWordString(varticalWord));
                     uniqueWords.add(getCompleteWordString(varticalWord));
                 }
             }
@@ -284,7 +288,7 @@ public class Board {
         int r = row - directions[0];
         int c = col - directions[1];
         while (isValidPosition(r, c) && !isEmpty(r, c)) {
-            tilesForWord.addFirst(tiles[r][c]); // Add at the beginning of the list
+            tilesForWord.add(0,tiles[r][c]); // Add at the beginning of the list
             r -= directions[0];
             c -= directions[1];
         }
@@ -318,34 +322,54 @@ public class Board {
 
     }
 
-    private int getScore(Word word) {
-        // i want to canculate the srore meaning that i need to go tile by tile breackdown:
-        //I want to check if there is a bonous of word
-        int score = 0;
-        int wordMulti = 1;
-        int[] directions = word.isVertical() ? new int[]{1, 0} : new int[]{0, 1};
-        int r = word.getRow();
-        int c = word.getCol();
-        BonusType bonus = null;
-        Position tilePos;
 
-        //now we gp tile by tile
-        for (Tile tile : word.getTiles()) {
-            int letterScore = 0;
+private int getScore(Word word) {
+    // i want to canculate the srore meaning that i need to go tile by tile breackdown:
+    //I want to check if there is a bonous of word
+    int score = 0;
+    int wordMulti = 1;
+    int[] directions = word.isVertical() ? new int[]{1, 0} : new int[]{0, 1};
+    int r = word.getRow();
+    int c = word.getCol();
+    BonusType bonus = null;
+    Position tilePos;
+    Position centerPos = new Position(7,7);
 
-            if (tile != null) {
-                letterScore = tile.score;
-                tilePos = new Position(r, c);
+    //now we gp tile by tile
+    for (Tile tile : word.getTiles()) {
+        int letterScore = 0;
+
+        if (tile != null)
+        {
+
+            letterScore = tile.score;
+            tilePos = new Position(r, c);
+
+
                 bonus = bonusTiles.get(tilePos);
-                if (bonus != null) {
+                if (bonus != null )
+                {
                     switch (bonus) {
                         case DOUBLE_LETTER:
+
                             letterScore *= 2;
                             break;
                         case TRIPLE_LETTER:
                             letterScore *= 3;
                             break;
                         case DOUBLE_WORD:
+                            if((tilePos.cols == centerPos.cols) && (tilePos.rows == centerPos.rows))
+                            {
+                                if(!isFirstWordPlaced)
+                                {
+                                    wordMulti *= 2;
+                                    break;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
                             wordMulti *= 2;
                             break;
                         case TRIPLE_WORD:
@@ -353,52 +377,58 @@ public class Board {
                             break;
                     }
                 }
-            } else {
-                letterScore = tiles[r][c].score;
-            }
-            //now i want to see if it is on spesial place:
 
-            r += directions[0];
-            c += directions[1];
-
-            score += letterScore;
         }
-        score *= wordMulti;
-        return score;
-
-
-    }
-
-    public void printBoardStatus() {
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                if (tiles[i][j] == null) {
-                    System.out.print(". "); // Print a dot for empty positions
-                } else {
-                    System.out.print(tiles[i][j].letter + " "); // Print the letter of the tile
-                }
-            }
-            System.out.println(); // New line after each row
+        else {
+            letterScore = tiles[r][c].score;
         }
-        System.out.println(); // Extra line for readability after the board is printed
-    }
 
-    private void addWordToBoard(Word word) {
+        r += directions[0];
+        c += directions[1];
+
+        score += letterScore;
+    }
+    score *= wordMulti;
+    return score;
+
+
+}
+
+//    public void printBoardStatus() {
+//        for (int i = 0; i < rows; i++) {
+//            for (int j = 0; j < cols; j++) {
+//                if (tiles[i][j] == null) {
+//                    System.out.print(". ");
+//                } else {
+//                    System.out.print(tiles[i][j].letter + " "); // Print the letter of the tile
+//                }
+//            }
+//            System.out.println(); // New line after each row
+//        }
+//        System.out.println(); // Extra line for readability after the board is printed
+//    }
+
+    private void addWordToBoard(Word word, int moveNumber) {
         int row = word.getRow();
         int col = word.getCol();
         //the tiles of the word itself not on board yet
-        for (Tile tile : word.getTiles()) {
+        for (Tile tile : word.getTiles())
+        {
+            Position pos = new Position(row,col);
             // Determine the actual tile to place at this position (handle placeholders)
             Tile actualTile = tile;
             //if in the word i got there is a null or place holder in the "tile" i check now
-            if (tile == null || "_".equals(String.valueOf(tile.letter))) { // Assuming your Tile class has a 'letter' field
+            if (tile == null || "_".equals(String.valueOf(tile.letter)))
+            {
                 // For a placeholder, use the existing tile on the board
                 actualTile = tiles[row][col];
             }
 
             // Update the board only if there's a tile to place
-            if (actualTile != null) {
+            if (actualTile != null && tiles[row][col]==null )
+            {
                 tiles[row][col] = actualTile;
+//                tilePlacementTurns.put(pos,moveNumber);
             }
 
             // Move to the next tile position based on word orientation
@@ -414,19 +444,22 @@ public class Board {
         if (!boardLegal(word) || !dictionaryLegal(word)) {
             return 0;
         }
-
-        addWordToBoard(word);
-        printBoardStatus();
+        currentMove += 1;
+        addWordToBoard(word, currentMove);
+//        printBoardStatus();
 
         int score = 0;
         ArrayList<Word> newWords = new ArrayList<Word>();
         newWords = getWords(word);
+        for (Word w : newWords)
+        {
+            score += getScore(w);
+        }
         if (uniqueWords.size() == 1) {
             isFirstWordPlaced = true;
         }
-        for (Word w : newWords) {
-            score += getScore(w);
-        }
+
+//        System.out.println(score);
         return score;
 
     }

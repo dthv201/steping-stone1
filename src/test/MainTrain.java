@@ -71,22 +71,7 @@ public class MainTrain {
 		//means all returns false
 		if(b.boardLegal(w0) || b.boardLegal(w1) || b.boardLegal(w2) || b.boardLegal(w3) || b.boardLegal(w4) || !b.boardLegal(w5) || !b.boardLegal(w6))
 			System.out.println("your boardLegal function is wrong (-10)");
-//		if(b.boardLegal(w0) )
-//			System.out.println("your boardLegal function is wrong (-10)");
-//
-//		if ( b.boardLegal(w1)) {
-//			System.out.println("your boardLegal function is wrong (-10)");
-//		}
-//		if(b.boardLegal(w2) )
-//			System.out.println("your boardLegal function is wrong (-10)");
-//		if(b.boardLegal(w3) )
-//			System.out.println("your boardLegal function is wrong (-10)");
-//		if(b.boardLegal(w4) )
-//			System.out.println("your boardLegal function is wrong (-10)");
-//		if(!b.boardLegal(w5) )
-//			System.out.println("your boardLegal function is wrong (-10)");
-//		if( !b.boardLegal(w6))
-//			System.out.println("your boardLegal function is wrong (-10)");
+
 
 		for(Tile t : ts)
 			bag.put(t);
