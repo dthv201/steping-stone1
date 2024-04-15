@@ -12,7 +12,7 @@ public class Board {
     private final int rows;
     private final int cols;
     private final Map<Position, BonusType> bonusTiles;
-//    private  Map<Position, Integer> tilePlacementTurns;
+
     private final HashSet<String> uniqueWords; // Keep track of unique words placed on the board
     private boolean isFirstWordPlaced;
 
@@ -30,7 +30,7 @@ public class Board {
 
     // No-argument constructor defaults to 15x15
     public Board() {
-        this(15, 15); // Calls the constructor with specified dimensions
+        this(15, 15);
     }
 
     public static Board getBoard() {
@@ -125,25 +125,15 @@ public class Board {
             return false;
         }
         //checks is the last tile in border
-        if (w.isVertical()) {
+        if (w.isVertical())
+        {
             //meaning i need to check the vartical componenet
-            if (row + w.getTiles().length - 1 <= 14) {
-                int finalRow = row + w.getTiles().length - 1;
+            return row + w.getTiles().length - 1 <= 14 ;
 
-                return true;
-            } else {
-                int finalRow = row + w.getTiles().length - 1;
-
-                return false;
-            }
-        } else {
-            if (col + w.getTiles().length - 1 <= 14) {
-                int finalCol = col + w.getTiles().length - 1;
-
-                return true;
-            } else {
-                return false;
-            }
+        }
+        else
+        {
+            return col + w.getTiles().length - 1 <= 14;
         }
     }
 
@@ -194,7 +184,8 @@ public class Board {
                 int curr_row = w.getRow() + (w.isVertical() ? i : 0);
                 int curr_col = w.getCol() + (w.isVertical() ? 0 : i);
 
-                if (!isEmpty(curr_row, curr_col) || !isEmpty(curr_row + 1, curr_col) || !isEmpty(curr_row - 1, curr_col) || !isEmpty(curr_row, curr_col + 1) || !isEmpty(curr_row, curr_col - 1)) {
+                if (!isEmpty(curr_row, curr_col) || !isEmpty(curr_row + 1, curr_col) ||
+                        !isEmpty(curr_row - 1, curr_col) || !isEmpty(curr_row, curr_col + 1) || !isEmpty(curr_row, curr_col - 1)) {
                     counter += 1;
                     return true;
                 }
@@ -351,27 +342,25 @@ private int getScore(Word word) {
                 {
                     switch (bonus) {
                         case DOUBLE_LETTER:
-
                             letterScore *= 2;
                             break;
+
                         case TRIPLE_LETTER:
                             letterScore *= 3;
                             break;
+
                         case DOUBLE_WORD:
-                            if((tilePos.cols == centerPos.cols) && (tilePos.rows == centerPos.rows))
+                            if((tilePos.cols == 7) && (tilePos.rows == 7))
                             {
                                 if(!isFirstWordPlaced)
                                 {
                                     wordMulti *= 2;
-                                    break;
                                 }
-                                else
-                                {
-                                    break;
-                                }
+                                break;
                             }
                             wordMulti *= 2;
                             break;
+
                         case TRIPLE_WORD:
                             wordMulti *= 3;
                             break;
@@ -379,8 +368,10 @@ private int getScore(Word word) {
                 }
 
         }
-        else {
+        else
+        {
             letterScore = tiles[r][c].score;
+//            letterScore = [r][c].score;
         }
 
         r += directions[0];
