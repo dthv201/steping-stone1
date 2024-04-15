@@ -17,7 +17,7 @@ public class Board {
     private boolean isFirstWordPlaced;
 
     // Constructor with specified dimensions
-    public Board(int rows, int cols) {
+    private Board(int rows, int cols) {
         this.rows = rows;
         this.cols = cols;
         this.tiles = new Tile[this.rows][this.cols];
@@ -29,19 +29,19 @@ public class Board {
     }
 
     // No-argument constructor defaults to 15x15
-    public Board() {
-        this(15, 15);
-    }
+//    public Board() {
+//        this(15, 15);
+//    }
 
     public static Board getBoard() {
         if (instance == null) {
-            instance = new Board(); // Initialize the instance if it doesn't exist
+            instance = new Board(15,15); // Initialize the instance if it doesn't exist
         }
         return instance; // Return the existing or new instance
     }
 
     // Initialize Double Letter (DL) score tiles in a pattern
-    public void initializeDoubleLetterPositions() {
+    private void initializeDoubleLetterPositions() {
         int[][] dlPositions = {{0, 3}, {0, 11}, {2, 6}, {2, 8}, {3, 0}, {3, 7}, {3, 14}, {6, 2}, {6, 6}, {6, 8}, {6, 12}, {7, 3}, {7, 11}, {8, 2}, {8, 6}, {8, 8}, {8, 12}, {11, 0}, {11, 7}, {11, 14}, {12, 6}, {12, 8}, {14, 3}, {14, 11}};
 
         // Apply Double Letter bonus to the specified positions
@@ -50,7 +50,7 @@ public class Board {
         }
     }
 
-    public void initializeTriple_word() {
+    private void initializeTriple_word() {
         // Directly set TW tiles for the corners
         bonusTiles.put(new Position(0, 0), BonusType.TRIPLE_WORD);
         bonusTiles.put(new Position(0, 14), BonusType.TRIPLE_WORD);
@@ -113,7 +113,7 @@ public class Board {
         initializeTripleLetterPositions();
     }
 
-    boolean dictionaryLegal(Word word) {
+    public boolean dictionaryLegal(Word word) {
         return true;
     }
 
@@ -186,7 +186,7 @@ public class Board {
 
                 if (!isEmpty(curr_row, curr_col) || !isEmpty(curr_row + 1, curr_col) ||
                         !isEmpty(curr_row - 1, curr_col) || !isEmpty(curr_row, curr_col + 1) || !isEmpty(curr_row, curr_col - 1)) {
-                    counter += 1;
+//                    counter += 1;
                     return true;
                 }
 

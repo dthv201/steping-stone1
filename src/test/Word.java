@@ -3,10 +3,10 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class Word {
-    private Tile[] tiles;
-    private int col;
-    private int row;
-    private boolean vertical;
+    private final Tile[] tiles;
+    private final int col;
+    private final int row;
+    private final boolean vertical;
 
     public Word(Tile[] tiles, int row, int col, boolean vertical) {
         this.tiles = tiles;

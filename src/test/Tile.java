@@ -89,7 +89,7 @@ public class Tile {
             return randomTile;
 
         }
-        private Boolean isBagEmpty()
+        private boolean isBagEmpty()
         {
             return availablesIndexes.isEmpty();
         }
@@ -101,15 +101,12 @@ public class Tile {
                 if (bagQuantities[index] > 0){
                     bagQuantities[index]--;
                     return tiles[index];
+                    //avelbleindex update
                 }
-                else{
-                    return null;
-                }
+
             }
-            else
-            {
-                return null;
-            }
+            return null;
+
         }
         public void put(Tile tile) {
             char charTile = tile.letter;
